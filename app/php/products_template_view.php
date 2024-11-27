@@ -10,6 +10,7 @@
 
 <body>
     <main>
+        <div><button onclick="productsTableHandler.getTable()">test get</button></div>
         <div id="itemsPerPage">Показывать на странице: <button class="active" onclick="productsTableHandler.setItemsPerPage(this)"> 15 </button> <button onclick="productsTableHandler.setItemsPerPage(this)"> 30 </button> <button onclick="productsTableHandler.setItemsPerPage(this)"> 50 </button></div>
         <div id="products_table">
             <table>
@@ -24,9 +25,14 @@
                         <th>Скрыть товар</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="tbody">
                     <?php
                     // Создаем default таблицу при первом запросе
+                    if(!mysqli_num_rows($data["table"])){
+                        echo "Таблица пуста";
+                        die();
+                    }
+                    else{
                     for ($row_no = 0; $row_no < $data["itemsPerPages"]; $row_no++) {
                         $data["table"]->data_seek($row_no);
                         $row = $data["table"]->fetch_assoc();
@@ -40,6 +46,7 @@
                         echo "<td>" . "<button onclick=\"productsTableHandler.setDelete(this)\">×</button> " . "</td>";
                         echo "</tr>";
                     }
+                }
                     ?>
                 </tbody>
             </table>

@@ -35,35 +35,62 @@ class ProductsModel
         return ceil($result["cnt"] / $itemsPerPage);
     }
 
-    public function getWholeTable(int $itemsPerPage = 15, string $sort = "ASC")
+    private function getSortOrder(string $sortRowOrder = "ASC")
     {
-        switch ($sort) {
+        switch ($sortRowOrder) {
             case 'ASC':
-                $sql = "SELECT * FROM $this->table ORDER BY DATE_CREATE ASC";
+                $sql_param = "ASC";
                 break;
             case 'DESC':
-                $sql = "SELECT * FROM $this->table ORDER BY DATE_CREATE DESC";
+                $sql_param = "DESC";
                 break;
             default:
-                $sql = "SELECT * FROM $this->table ORDER BY DATE_CREATE ASC";
+                $sql_param = "ASC";
                 break;
         }
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute();
-        $data["table"] = $stmt->get_result();
-        $data ["pages"] = $this->getPageCount($itemsPerPage);
-        $data ["itemsPerPages"] = $itemsPerPage;
+        return $sql_param;
+    }
+
+    private function prepareModel($stmt, int $page, int $itemPerPage)
+    {
+        $data["table"] = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $data["pages"] = $this->getPageCount($itemPerPage);
+        $data["offset"] = $page - 1;
         return $data;
     }
 
-    public function getTable($ammount)
+    public function getDefaultModel()
     {
-        return $this->db->query("SELECT * FROM $this->table");
+        $itemsPerPage = 15;
+        $sqlSortRowParam = "DATE_CREATE";
+        $sqlOrderParam = $this->getSortOrder();
+
+        $sql = "SELECT * FROM $this->table WHERE PRODUCT_DELETED = 0 ORDER BY ? ";
+        $sql .= $sqlOrderParam;
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$sqlSortRowParam]);
+
+        $data["table"] = $stmt->get_result();
+        $data["pages"] = $this->getPageCount($itemsPerPage);
+        $data["itemsPerPages"] = $itemsPerPage;
+
+        return $data;
+    }
+
+    public function getModel(string $sortRow, string $sortRowOrder, int $itemPerPage, int $page)
+    {
+        $sql = "SELECT * FROM $this->table WHERE PRODUCT_DELETED = 0 ORDER BY ?, ? LIMIT ? OFFSET ?";
+        $offset = ($page - 1) * $itemPerPage;
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$sortRow, $sortRowOrder, $itemPerPage, $offset]);
+
+        $data = $this->prepareModel($stmt, $page, $itemPerPage);
+        return $data;
     }
 
     public function updateProductQuanity(int $quanity, int $id)
     {
-        $sql = "UPDATE $this->table SET PRODUCT_QUANTITY=? WHERE ID=?";
+        $sql = "UPDATE $this->table SET PRODUCT_QUANTITY=PRODUCT_QUANTITY+? WHERE ID=?";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$quanity, $id]);
     }

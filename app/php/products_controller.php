@@ -14,23 +14,28 @@ class CProducts
     }
 
 
-    function getWholeTable()
+    function getDefaultTable()
     {
-        $data = $this->model->getWholeTable();
+        $data = $this->model->getDefaultModel();
         $this->view->generate('products_template_view.php', $data);
     }
 
-    function getTable($ammount=15)
+    function getTable(string $sortRow="PRODUCT_ID", string $sortRowOrder="ASC", int $itemPerPage=15, int $page=1)
     {
-        $data = $this->model->getTable($ammount);
-        $this->view->generate('products_template_view.php', $data);
+        $data = $this->model->getModel($sortRow, $sortRowOrder, $itemPerPage, $page);
+        $decode = json_encode($data,true);
+        echo $decode;
     }
 
-    function updateProductQuanity(){
+    function updateProductQuanity()
+    {
         $postData = json_decode(file_get_contents('php://input'));
 
-        $this->model->updateProductQuanity($postData->quanity,$postData->id);
+        $this->model->updateProductQuanity($postData->quanity, $postData->id);
     }
 
-
+    function setProductDeletion(){
+        $postData = json_decode(file_get_contents('php://input'));
+        $this->model->setDelete($postData->id);
+    }
 }
