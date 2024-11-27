@@ -14,6 +14,22 @@ async function testPost() {
     console.log(response.ok);
 }
 
+async function testGet() {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+
+    const response = await fetch("http://localhost/getTable", {
+        method: "GET",
+        headers: myHeaders,
+    });
+    data = await response.json();
+    console.log(data);
+    for (const product of data.table) {
+        console.log(product.ID);
+    }
+}
+
+
 // def value
 
 class ProductsTableHandler {
@@ -25,6 +41,7 @@ class ProductsTableHandler {
         this.itemsPerPageElement = document.getElementById("itemsPerPage");
 
         this.theadElement = document.getElementById("thead");
+        this.tbodyElement = document.getElementById("tbody");
     }
 
     init() {
@@ -34,10 +51,9 @@ class ProductsTableHandler {
     setDefaultSorterRow() {
         this.sortedRow = () => {
             for (const th of this.theadElement.firstElementChild.children) {
-                if (th.classList.contains("sorted") && th.classList.contains("ASC")) return th;
+                if (th.classList.contains("sorted") && th.classList.contains("ASC")) return th.firstElementChild.innerHTML;
             }
         }
-        console.log(this.sortedRow());
         this.sortedRowOrder = "ASC";
     }
 
@@ -51,33 +67,123 @@ class ProductsTableHandler {
                 child.classList.remove("active")
             }
         }
+        this.itemsPerPage = obj.textContent;
 
-        this.itemsPerPage = obj.innerHTML;
+        this.getTable();
     }
 
-    setSortRow(obj){
+    setSortRow(obj) {
         alert(`Сортируем ${obj.innerHTML} в порядке ${this.sortedRowOrder}`)
     }
 
-    changeQuantity(obj,i){
+    changeQuantity(obj, i) {
         alert(`Прибавили/убавили ${obj.parentElement.parentElement.firstElementChild.innerHTML} на ${i}`)
     }
 
-    setDelete(obj){
+    setDelete(obj) {
         alert(`Скрыли ${obj.parentElement.parentElement.firstElementChild.innerHTML}`)
 
-        
+
     }
 
-    turnPage(i){
+    turnPage(i) {
         alert(`Страница сдвинута на ${i}`)
     }
 
+    async getTable() {
+        //$sortRow, $sortRowOrder, $itemPerPage, $page    
+        const response = await fetch("http://localhost/getTable/?" + new URLSearchParams({
+            sortRow: this.sortedRow(),
+            sortRowOrder: this.sortedRowOrder,
+            itemPerPage: this.itemsPerPage,
+            page: this.currentPage,
+        }).toString());
+        const data = await response.json()
 
-    generateTable(){
+        this.generateTable(data);
+    }
 
+    clearAll() {
+        this.clearTable();
+        this.clearPagination();
+    }
+
+    clearTable() {
+        while (this.tbodyElement.firstChild) {
+            this.tbodyElement.removeChild(this.tbodyElement.firstChild);
+        }
+    }
+
+    clearPagination() {
+        while (this.paginateElement.firstChild) {
+            this.paginateElement.removeChild(this.paginateElement.firstChild);
+        }
+    }
+
+    generatePagination(pages) {
+        const parent = this.paginateElement;
+        const btnTurnPageMinus = document.createElement('button');
+        btnTurnPageMinus.setAttribute("onclick", "productsTableHandler.turnPage(-1)");
+        btnTurnPageMinus.textContent = "<";
+        parent.appendChild(btnTurnPageMinus);
+        for (let i = 0; i < pages; i++) {
+            const btn = document.createElement('button');
+            btn.setAttribute("onclick", `productsTableHandler.setPage(${i+1})`);
+            btn.textContent = i+1;
+            parent.appendChild(btn);
+        }
+        const btnTurnPagePlus = document.createElement('button');
+        btnTurnPagePlus.setAttribute("onclick", "productsTableHandler.turnPage(+1)");
+        btnTurnPagePlus.textContent = ">";
+        parent.appendChild(btnTurnPagePlus);
+    }
+
+    generateTable(data) {
+        this.clearAll();
+
+        for (const products of data.table) {
+            const tr = document.createElement('tr');
+            tr.id = (products["ID"]);
+            for (const key in products) {
+                if (Object.prototype.hasOwnProperty.call(products, key)) {
+                    const element = products[key];
+                    if (key === "ID") continue;
+                    const td = document.createElement('td');
+                    if (key === "PRODUCT_DELETED") {
+                        const btn = document.createElement('button');
+                        btn.setAttribute("onclick", "productsTableHandler.setDelete(this)");
+                        btn.textContent = "×";
+                        td.appendChild(btn);
+                    }
+                    else if (key === "PRODUCT_QUANTITY") {
+                        const btnMinus = document.createElement('button');
+                        btnMinus.setAttribute("onclick", "productsTableHandler.changeQuantity(this,-1)");
+                        btnMinus.textContent = "−";
+                        td.appendChild(btnMinus);
+
+                        const span = document.createElement('span');
+                        span.textContent = " " + element + " ";
+                        td.appendChild(span);
+
+                        const btnPlus = document.createElement('button');
+                        btnPlus.setAttribute("onclick", "productsTableHandler.changeQuantity(this,+1)");
+                        btnPlus.textContent = "+";
+                        td.appendChild(btnPlus);
+                    }
+                    else {
+                        td.textContent = element;
+                    }
+                    tr.appendChild(td)
+                }
+            }
+            tbody.appendChild(tr);
+        }
+
+        this.generatePagination(data.pages);
     }
 }
+
+
 
 const productsTableHandler = new ProductsTableHandler();
 productsTableHandler.init();
