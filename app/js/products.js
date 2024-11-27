@@ -1,37 +1,3 @@
-async function testPost() {
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-
-    const response = await fetch("http://localhost/updateProductQuanity", {
-        method: "POST",
-        body: JSON.stringify({
-            id: "1",
-            quanity: "5"
-        }),
-        headers: myHeaders,
-    });
-
-    console.log(response.ok);
-}
-
-async function testGet() {
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-
-    const response = await fetch("http://localhost/getTable", {
-        method: "GET",
-        headers: myHeaders,
-    });
-    data = await response.json();
-    console.log(data);
-    for (const product of data.table) {
-        console.log(product.ID);
-    }
-}
-
-
-// def value
-
 class ProductsTableHandler {
     constructor() {
         this.currentPage = 1;
@@ -224,13 +190,9 @@ class ProductsTableHandler {
             tbody.appendChild(tr);
         }
         this.generatePagination(data.pages);
-
-        console.log(productsTableHandler);
     }
 
 }
 
 const productsTableHandler = new ProductsTableHandler();
 productsTableHandler.init();
-
-console.log(productsTableHandler);

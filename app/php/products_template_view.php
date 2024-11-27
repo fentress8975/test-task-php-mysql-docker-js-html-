@@ -27,26 +27,24 @@
                 </thead>
                 <tbody id="tbody">
                     <?php
-                    // Создаем default таблицу при первом запросе
-                    if(!mysqli_num_rows($data["table"])){
+                    if (!mysqli_num_rows($data["table"])) {
                         echo "Таблица пуста";
                         die();
+                    } else {
+                        for ($row_no = 0; $row_no < $data["itemsPerPages"]; $row_no++) {
+                            $data["table"]->data_seek($row_no);
+                            $row = $data["table"]->fetch_assoc();
+                            echo "<tr id=\"{$row['ID']}\">";
+                            echo "<td>" . $row['PRODUCT_ID'] . "</td>";
+                            echo "<td>" . $row['PRODUCT_NAME'] . "</td>";
+                            echo "<td>" . $row['PRODUCT_PRICE'] . "</td>";
+                            echo "<td>" . $row['PRODUCT_ARTICLE'] . "</td>";
+                            echo "<td>" . "<button onclick=\"productsTableHandler.changeQuantity(this,-1)\">−</button> "  . $row['PRODUCT_QUANTITY'] . " <button onclick=\"productsTableHandler.changeQuantity(this,+1)\">+</button>" . "</td>";
+                            echo "<td>" . $row['DATE_CREATE'] . "</td>";
+                            echo "<td>" . "<button onclick=\"productsTableHandler.setDelete(this)\">×</button> " . "</td>";
+                            echo "</tr>";
+                        }
                     }
-                    else{
-                    for ($row_no = 0; $row_no < $data["itemsPerPages"]; $row_no++) {
-                        $data["table"]->data_seek($row_no);
-                        $row = $data["table"]->fetch_assoc();
-                        echo "<tr id=\"{$row['ID']}\">";
-                        echo "<td>" . $row['PRODUCT_ID'] . "</td>";
-                        echo "<td>" . $row['PRODUCT_NAME'] . "</td>";
-                        echo "<td>" . $row['PRODUCT_PRICE'] . "</td>";
-                        echo "<td>" . $row['PRODUCT_ARTICLE'] . "</td>";
-                        echo "<td>" . "<button onclick=\"productsTableHandler.changeQuantity(this,-1)\">−</button> "  . $row['PRODUCT_QUANTITY'] . " <button onclick=\"productsTableHandler.changeQuantity(this,+1)\">+</button>" . "</td>";
-                        echo "<td>" . $row['DATE_CREATE'] . "</td>";
-                        echo "<td>" . "<button onclick=\"productsTableHandler.setDelete(this)\">×</button> " . "</td>";
-                        echo "</tr>";
-                    }
-                }
                     ?>
                 </tbody>
             </table>
@@ -55,7 +53,6 @@
             <button onclick="productsTableHandler.turnPage(-1)">
                 < </button>
                     <?php
-                    // Создаем default пагинацию при первом запросе
                     for ($i = 1; $i < $data["pages"] + 1; $i++) {
                         echo "<button onclick=\"productsTableHandler.setPage($i)\"> $i </button>";
                     }
