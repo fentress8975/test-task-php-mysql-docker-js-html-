@@ -707,3 +707,8 @@
     padding: 1.5rem;
     margin: 2rem 0;
   }
+
+  .active{
+    color: white;
+  }
+
