@@ -19,9 +19,9 @@ class CProducts
         $this->view->generate('products_template_view.php', $data);
     }
 
-    function getTable(string $sortRow = "PRODUCT_ID", string $sortRowOrder = "ASC", int $itemPerPage = 15, int $page = 1)
+    function getTable(string $sortColumn = "PRODUCT_ID", string $sortColumnOrder = "ASC", int $itemPerPage = 15, int $page = 1)
     {
-        $data = $this->model->getModel($sortRow, $sortRowOrder, $itemPerPage, $page);
+        $data = $this->model->getModel($sortColumn, $sortColumnOrder, $itemPerPage, $page);
         $decode = json_encode($data, true);
         echo $decode;
     }

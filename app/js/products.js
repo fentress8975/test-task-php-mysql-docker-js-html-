@@ -11,17 +11,20 @@ class ProductsTableHandler {
     }
 
     init() {
-        this.setDefaultSorterRow();
+        this.setDefaultSorterColumn();
         this.setDefaultPages();
     }
 
-    setDefaultSorterRow() {
-        this.sortedRow = () => {
-            for (const th of this.theadElement.firstElementChild.children) {
-                if (th.classList.contains("sorted") && th.classList.contains("ASC")) return th.firstElementChild.innerHTML;
-            }
+    setDefaultSorterColumn() {
+
+        this.sortedColumn = this.findSortedColumn();
+        this.sortedColumnOrder = "ASC";
+    }
+
+    findSortedColumn() {
+        for (const th of this.theadElement.firstElementChild.children) {
+            if (th.classList.contains("sorted") && th.classList.contains("ASC")) return th.firstElementChild.innerHTML;
         }
-        this.sortedRowOrder = "ASC";
     }
 
     setDefaultPages() {
@@ -44,12 +47,33 @@ class ProductsTableHandler {
         this.getTable();
     }
 
-    setSortRow(obj) {
-        alert(`Сортируем ${obj.innerHTML} в порядке ${this.sortedRowOrder}`)
+    setSortColumn(obj) {
+        for (const child of this.theadElement.firstElementChild.children) {
+            if (obj.parentElement === child) {
+                if (child.classList.contains('sorted')) {
+                    if (child.classList.contains('ASC')) {
+                        child.classList.replace("ASC", "DESC");
+                        this.sortedColumnOrder = "DESC";
+                        this.sortedColumn = child.innerHTML;
+                    } else {
+                        child.classList.replace("DESC", "ASC");
+                        this.sortedColumnOrder = "ASC";
+                        this.sortedColumn = child.innerHTML;
+                    }
+                } else {
+                    child.classList.add("sorted", "ASC")
+                    this.sortedColumnOrder = "ASC";
+                }
+            }
+            else {
+                child.classList.remove("sorted", "DESC", "ASC");
+            }
+        }
+        this.sortedColumn = obj.innerHTML.trim();
+        this.getTable();
     }
 
     async changeQuantity(obj, i) {
-        alert(`Прибавили/убавили ${obj.parentElement.parentElement.firstElementChild.innerHTML} на ${i}`)
         const myHeaders = new Headers();
         myHeaders.append("Content-Type", "application/json");
 
@@ -67,7 +91,6 @@ class ProductsTableHandler {
     }
 
     async setDelete(obj) {
-        alert(`Скрыли ${obj.parentElement.parentElement.firstElementChild.innerHTML}`);
         const myHeaders = new Headers();
         myHeaders.append("Content-Type", "application/json");
 
@@ -96,10 +119,9 @@ class ProductsTableHandler {
     }
 
     async getTable() {
-        //$sortRow, $sortRowOrder, $itemPerPage, $page    
         const response = await fetch("http://localhost/getTable/?" + new URLSearchParams({
-            sortRow: this.sortedRow(),
-            sortRowOrder: this.sortedRowOrder,
+            sortColumn: this.sortedColumn,
+            sortColumnOrder: this.sortedColumnOrder,
             itemPerPage: this.itemsPerPage,
             page: this.currentPage,
         }).toString());

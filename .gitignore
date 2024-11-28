@@ -19,4 +19,6 @@
 
 
 docker/mysql/data/mysql.sock
+docker/mysql/data/*.log
 text.md
+

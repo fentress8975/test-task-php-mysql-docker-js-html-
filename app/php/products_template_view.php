@@ -16,12 +16,12 @@
             <table>
                 <thead id="thead">
                     <tr>
-                        <th><button onclick="productsTableHandler.setSortRow(this)">PRODUCT_ID</button></th>
-                        <th><button onclick="productsTableHandler.setSortRow(this)">PRODUCT_NAME</button></th>
-                        <th><button onclick="productsTableHandler.setSortRow(this)">PRODUCT_PRICE</button></th>
-                        <th><button onclick="productsTableHandler.setSortRow(this)">PRODUCT_ARTICLE</button></th>
-                        <th><button onclick="productsTableHandler.setSortRow(this)">PRODUCT_QUANTITY</button></th>
-                        <th class='sorted ASC'><button onclick="productsTableHandler.setSortRow(this)">DATE_CREATE</button></th>
+                        <th class='sorted ASC'><button onclick="productsTableHandler.setSortColumn(this)">PRODUCT_ID</button></th>
+                        <th><button onclick="productsTableHandler.setSortColumn(this)">PRODUCT_NAME</button></th>
+                        <th><button onclick="productsTableHandler.setSortColumn(this)">PRODUCT_PRICE</button></th>
+                        <th><button onclick="productsTableHandler.setSortColumn(this)">PRODUCT_ARTICLE</button></th>
+                        <th><button onclick="productsTableHandler.setSortColumn(this)">PRODUCT_QUANTITY</button></th>
+                        <th><button onclick="productsTableHandler.setSortColumn(this)">DATE_CREATE</button></th>
                         <th>Скрыть товар</th>
                     </tr>
                 </thead>

@@ -51,6 +51,21 @@ class ProductsModel
         return $sql_param;
     }
 
+    private function getSortColumn(string $column)
+    {
+        $sql = "SELECT * FROM $this->table WHERE PRODUCT_DELETED = 0 LIMIT 1";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $columns = array_keys($result->fetch_assoc());
+
+        if (in_array($column, $columns)) {
+            return $column;
+        } else {
+            return $columns[0];
+        }
+    }
+
     private function prepareModel($stmt, int $page, int $itemPerPage)
     {
         $data["table"] = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
@@ -62,27 +77,33 @@ class ProductsModel
     public function getDefaultModel()
     {
         $itemsPerPage = 15;
-        $sqlSortRowParam = "DATE_CREATE";
+        $sqlSortColumnParam = "ID";
         $sqlOrderParam = $this->getSortOrder();
 
-        $sql = "SELECT * FROM $this->table WHERE PRODUCT_DELETED = 0 ORDER BY ? ";
+        $sql = "SELECT * FROM $this->table WHERE PRODUCT_DELETED = 0 ORDER BY $sqlSortColumnParam ";
         $sql .= $sqlOrderParam;
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$sqlSortRowParam]);
+        $stmt->execute();
 
-        $data["table"] = $stmt->get_result();
+        $result = $stmt->get_result();
+
+        $data["table"] = $result;
         $data["pages"] = $this->getPageCount($itemsPerPage);
         $data["itemsPerPages"] = $itemsPerPage;
 
         return $data;
     }
 
-    public function getModel(string $sortRow, string $sortRowOrder, int $itemPerPage, int $page)
+    public function getModel(string $sortColumn, string $sortColumnOrder, int $itemPerPage, int $page)
     {
-        $sql = "SELECT * FROM $this->table WHERE PRODUCT_DELETED = 0 ORDER BY ?, ? LIMIT ? OFFSET ?";
+        $sortColumnOrder = $this->getSortOrder($sortColumnOrder);
+        $sortColumn = $this->getSortColumn($sortColumn);
+
+        $sql = "SELECT * FROM $this->table WHERE PRODUCT_DELETED = 0 ORDER BY $sortColumn $sortColumnOrder  LIMIT ? OFFSET ?";
+
         $offset = ($page - 1) * $itemPerPage;
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$sortRow, $sortRowOrder, $itemPerPage, $offset]);
+        $stmt->execute([$itemPerPage, $offset]);
 
         $data = $this->prepareModel($stmt, $page, $itemPerPage);
         return $data;
